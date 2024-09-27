@@ -1,18 +1,17 @@
-import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { AnchorDemo } from "../target/types/anchor_demo";
-import { assert } from "chai";
+import * as anchor from "@project-serum/anchor";
 
 describe("anchor-demo", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.AnchorDemo as Program<AnchorDemo>;
+  const program = anchor.workspace.AnchorDemo;
   let userAccount = new anchor.web3.Keypair();
+  console.log("userAccount : ", userAccount.publicKey);
+
   it("create user!", async () => {
     const tx = await program.methods
-      .createUser(userAccount.publicKey, "utsavemp", 19)
+      .createUser(userAccount.publicKey, "utsavemp", new anchor.BN(19))
       .accounts({
         userAccount: userAccount.publicKey,
         user: provider.wallet.publicKey,
@@ -31,7 +30,7 @@ describe("anchor-demo", () => {
 
   it("update user data!", async () => {
     const updated_userdata = await program.methods
-      .updateUser("anmol", 25)
+      .updateUser("anmol", new anchor.BN(25))
       .accounts({ userData: userAccount.publicKey })
       .rpc();
     console.log("updated_userdata : ", updated_userdata);

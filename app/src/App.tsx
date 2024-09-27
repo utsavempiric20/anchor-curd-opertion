@@ -1,65 +1,95 @@
+import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import "./App.css";
 import Home from "./components/Home";
-
-import { createAppKit } from "@reown/appkit/react";
-import { SolanaAdapter } from "@reown/appkit-adapter-solana/react";
-import { solana, solanaTestnet, solanaDevnet } from "@reown/appkit/networks";
-import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
-} from "@solana/wallet-adapter-wallets";
-import { useAnchorWallet } from "@solana/wallet-adapter-react";
-
-import { Connection } from "@solana/web3.js";
-
-import { AnchorProvider } from "@coral-xyz/anchor";
+import { useEffect, useState } from "react";
+import { AnchorProvider, Idl, Program } from "@project-serum/anchor";
+import idl from "./utils/idl.json";
 
 function App() {
-  const solanaWeb3JsAdapter = new SolanaAdapter({
-    wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
-  });
+  const [walletAddress, setWalletAddress] = useState("");
+  const [program, setProgram] = useState<Program>();
+  const [connection, setConnection] = useState<Connection | null>(null);
+  const [anchorProvider, setAnchorProvider] = useState<AnchorProvider | null>(
+    null
+  );
 
-  const projectId = "bae88779195748e5adc36a1a36f0ae3f";
-
-  const metadata = {
-    name: "AppKit",
-    description: "AppKit Solana Example",
-    url: "https://web3modal.com",
-    icons: ["https://avatars.githubusercontent.com/u/179229932"],
+  const connectWallet = async () => {
+    if (window.solana) {
+      try {
+        const response = await window.solana.connect();
+        console.log(response.publicKey.toString());
+        setWalletAddress(response.publicKey.toString());
+        connectAnchorProvider();
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      console.log("Doesn't have solana wallet");
+    }
   };
 
-  createAppKit({
-    adapters: [solanaWeb3JsAdapter],
-    networks: [solana, solanaTestnet, solanaDevnet],
-    metadata: metadata,
-    projectId,
-    features: {
-      analytics: true,
-    },
-  });
-
-  const wallet = useAnchorWallet();
-
-  function getProvider() {
-    if (!wallet) {
-      return null;
+  const checkIfConnected = async () => {
+    if (window.solana) {
+      try {
+        const response = await window.solana.connect({ onltIfParsed: true });
+        setWalletAddress(response.publicKey.toString());
+        connectAnchorProvider();
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      console.log("Doesn't have solana wallet");
     }
+  };
 
-    const network = "http://127.0.0.1:8899";
-    const connection = new Connection(network, "processed");
-
-    const provider = new AnchorProvider(connection, wallet, {
-      preflightCommitment: "processed",
+  useEffect(() => {
+    window.addEventListener("load", () => {
+      if (window.solana && window.solana.isPhantom) {
+        checkIfConnected();
+      }
     });
-    return provider;
-  }
+  }, []);
+
+  const connectAnchorProvider = () => {
+    try {
+      const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+      const wallet = window.solana;
+
+      if (!wallet || !wallet.isPhantom) {
+        throw new Error(
+          "Phantom wallet not found. Please install and connect Phantom."
+        );
+      }
+
+      const anchorProvider = new AnchorProvider(connection, wallet, {
+        preflightCommitment: "processed",
+      });
+
+      const programId = new PublicKey(idl.metadata.address);
+
+      const program = new Program(idl as Idl, programId, anchorProvider);
+      setConnection(connection);
+      setProgram(program);
+      setAnchorProvider(anchorProvider);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
-      <center>
-        <w3m-button />
-      </center>
-      <Home getProvider={getProvider} />
+      {walletAddress ? (
+        <div>connected wallet : {walletAddress}</div>
+      ) : (
+        <button onClick={connectWallet}>Connect Wallet</button>
+      )}
+      <Home
+        program={program}
+        walletAddress={walletAddress}
+        connection={connection}
+        anchorProvider={anchorProvider}
+      />
     </>
   );
 }
