@@ -4,6 +4,15 @@ import Home from "./components/Home";
 import { useEffect, useState } from "react";
 import { AnchorProvider, Idl, Program } from "@project-serum/anchor";
 import idl from "./utils/idl.json";
+import { Buffer } from "buffer";
+window.Buffer = Buffer;
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    solana?: any;
+  }
+}
 
 function App() {
   const [walletAddress, setWalletAddress] = useState("");
@@ -48,7 +57,7 @@ function App() {
         checkIfConnected();
       }
     });
-  }, []);
+  });
 
   const connectAnchorProvider = () => {
     try {
