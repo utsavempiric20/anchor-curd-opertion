@@ -14,7 +14,7 @@ pub mod anchor_demo {
         user_age: u8,
     ) -> Result<()> {
         let user_data = &mut ctx.accounts.user_account;
-        user_data.user_pubkey = ctx.accounts.user.key();
+        user_data.user_pubkey = user_pub_key;
         user_data.username = user_name;
         user_data.age = user_age;
         Ok(())
