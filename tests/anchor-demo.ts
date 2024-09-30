@@ -57,7 +57,9 @@ describe("anchor-demo", () => {
   it("fetch deleted user data!", async () => {
     await program.account.user
       .fetch(userAccount.publicKey)
-      .then((data) => console.log(data))
-      .catch((err) => console.log(err));
+      .then((data: any) => console.log(data))
+      .catch((err: any) =>
+        console.log("User Account was deleted,No data found")
+      );
   });
 });

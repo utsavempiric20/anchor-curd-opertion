@@ -35,7 +35,6 @@ const Home: FC<HomeProps> = (props) => {
 
     if (program) {
       try {
-        console.log("baseAccount : ", baseAccount.publicKey.toString());
         await program.methods
           .createUser(baseAccount.publicKey, username, new BN(userAge))
           .accounts({
@@ -59,7 +58,7 @@ const Home: FC<HomeProps> = (props) => {
         setUsername("");
         setUserage(1);
       } catch (error) {
-        console.log(error);
+        alert(error);
       }
     } else {
       alert("Program not found");
@@ -74,7 +73,7 @@ const Home: FC<HomeProps> = (props) => {
     if (program) {
       try {
         const publicKeyObj = new PublicKey(publicKey);
-        console.log("update pubkey : ", publicKeyObj.toString());
+
         await program.methods
           .updateUser(username, new BN(userAge))
           .accounts({
@@ -96,7 +95,7 @@ const Home: FC<HomeProps> = (props) => {
         setUsername("");
         setUserage(1);
       } catch (error) {
-        console.log(error);
+        alert(error);
       }
     } else {
       alert("Program not found");
@@ -112,7 +111,7 @@ const Home: FC<HomeProps> = (props) => {
     if (program) {
       try {
         const publicKeyObj = new PublicKey(publicKey);
-        console.log("delete pubkey : ", publicKeyObj.toString());
+
         await program.methods
           .deleteUser()
           .accounts({
@@ -126,7 +125,7 @@ const Home: FC<HomeProps> = (props) => {
         );
         setUserData(deletedData);
       } catch (error) {
-        console.log(error);
+        alert(error);
         return false;
       }
     } else {
